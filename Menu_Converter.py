@@ -15,158 +15,400 @@ from tqdm import tqdm
 
 
 ssl._create_default_https_context = ssl._create_unverified_context
-
+directory='C:\\Ziitech'
+FinalMenulFile=directory+'\\export_FullMenu.xlsx'
+fullSizeMenuTemplate_file=directory+"\\ZiiPOS_MenuTemplate.xlsx"
+Export_file=directory+"\\export_data.xlsx"
+downloadURL="https://download.ziicloud.com/other/ZiiPOS_MenuTemplate.xlsx"
 
 def closesystem():
     sys.exit()
 
-def convertToDDAExcel(SourceData,DDATemplate):
-    DDAExcelDataFrame = pd.DataFrame()
-
-    TemplateData=DDATemplate.iloc[0]
-    TemplateData["WholesalePrice1(Inc GST)"] =0
-    TemplateData["WholesalePrice2(Inc GST)"] =0
-
+    
+   
+def processMenuGroup(ExcelSouce,template):
+    MenuGroupDataFrame = pd.DataFrame()
+    
+    TemplateData=template.iloc[0]
+    menugroups=ExcelSouce.loc[:,"MenuGroup"]
+    MenuGroupList = menugroups.drop_duplicates()
+    print(MenuGroupList)
+    #print(MenuGroupList[0]["MenuGroup"])
+    
     z=0
-    for z in tqdm(range(len(SourceData))):
-    #for z in range(len(SourceData)):
+    for z in tqdm(range(len(MenuGroupList))):
+        for z in range(len(MenuGroupList)):
+            
+            TemplateData["Description"]=MenuGroupList[z]
+            TemplateData["CultureDescription"]=MenuGroupList[z]
+            TemplateData["Code"]=z
+            TemplateData["OrderIndex"]=z
         
-        #print(z ," / ",len(SourceData) ," (2)" )
-        if pd.notna(SourceData.iloc[z]["StockID"]):
-            TemplateData=DDATemplate.iloc[0]
-            TemplateData["ProductCode(15)"] = SourceData.iloc[z]["StockID"]
-            TemplateData["Description1(100)"] = SourceData.iloc[z]["Description1"]
-            TemplateData["Description2(100)"] = SourceData.iloc[z]["Description2"]
-            
-            TemplateData["Category(25)"] = SourceData.iloc[z]["DepartmentName"]
-
-            TemplateData["SalesPrice1(Inc GST)"] = SourceData.iloc[z]["Price"]
-            #TemplateData["WholesalePrice1(Inc GST)"] = SourceData.iloc[z]["F_WPrice"]
-            
-            TemplateData["LastOrderPrice(Ex GST)"] = SourceData.iloc[z]["ItemCost"]
-
-            # BC1 = str(SourceData.iloc[z]["barcode1"])
-            # BC2 = str(SourceData.iloc[z]["barcode2"])
-            # BC3 = str(SourceData.iloc[z]["barcode3"])
-            # BC4 = str(SourceData.iloc[z]["barcode4"])
-            # BC5 = str(SourceData.iloc[z]["barcode5"])
-            # BC6 = str(SourceData.iloc[z]["barcode6"])
-            
-            TemplateData["Barcode1(30)"] = str(SourceData.iloc[z]["barcode1"]).replace(" ", "")
-            TemplateData["Barcode2(30)"] = str(SourceData.iloc[z]["barcode2"]).replace(" ", "")
-            TemplateData["Barcode3(30)"] = str(SourceData.iloc[z]["barcode3"]).replace(" ", "")
-            TemplateData["Barcode4(30)"] = str(SourceData.iloc[z]["barcode4"]).replace(" ", "")
-            TemplateData["Barcode5(30)"] = str(SourceData.iloc[z]["barcode5"]).replace(" ", "")
-            TemplateData["Barcode6(30)"] = str(SourceData.iloc[z]["barcode6"]).replace(" ", "")
-            
-
-            TemplateData["GSTRate"] = SourceData.iloc[z]["GSTRate"]
-            TemplateData["Measurement (Pack)"] = SourceData.iloc[z]["PackSize"]
-            
-        
-            if SourceData.iloc[z]["Scale"] == "Y":
-                TemplateData["Scaleable"] = 1
-            else:
-                TemplateData["Scaleable"] = 0    
-
-        
-      
-
             TemplateData = TemplateData.to_frame()
             TemplateData = TemplateData.transpose()
                 
 
-            DDAExcelDataFrame = pd.concat([DDAExcelDataFrame, TemplateData],ignore_index=True)
-
+            MenuGroupDataFrame = pd.concat([MenuGroupDataFrame, TemplateData],ignore_index=True)
+    return MenuGroupDataFrame
   
     
-    return DDAExcelDataFrame
-
-
-
-
-         
-
-
-def processProductWithBarCode(connect_string):
-    PassSQLServerConnection = pyodbc.connect(connect_string)
-
-  
-
     
+def processCategory(ExcelSouce,template):
+    CategoryDataFrame = pd.DataFrame()
     
-    productListQuery = "select ItemDetails.*,barcode1,barcode2,barcode3,barcode4,barcode5,barcode6,y.Description as DepartmentName, NormalPrice.Price, CostCompare.ItemCost from ItemDetails left join (Select StockID,  MAX(CASE when a.rowNum=1 THEN Barcode else '' end) barcode1,  MAX(CASE when a.rowNum=2 THEN Barcode else '' end) barcode2,  MAX(CASE when a.rowNum=3 THEN Barcode else '' end) barcode3,  MAX(CASE when a.rowNum=4 THEN Barcode else '' end) barcode4,  MAX(CASE when a.rowNum=5 THEN Barcode else '' end) barcode5,  MAX(CASE when a.rowNum=6 THEN Barcode else '' end) barcode6   from( select *,ROW_NUMBER( ) OVER ( PARTITION BY StockId ORDER BY Barcode  ) AS rowNum from Barcode )a  GROUP BY StockID) x on ItemDetails.StockID =x.StockID  left join (Select * from   Department) y on ItemDetails.Department =y.DepartmentID left join (select * from NormalPrice) NormalPrice on NormalPrice.StockID=ItemDetails.StockID left join (select * from CostCompare)CostCompare on CostCompare.StockID = ItemDetails.StockID"
-
-
-   
-
-    productList = pd.read_sql_query(productListQuery, PassSQLServerConnection)
-  
-
-    result=productList
+    TemplateData=template.iloc[0]
+    CategoryList=ExcelSouce.loc[:,"Category"]
+    CategoryList = CategoryList.drop_duplicates()
+    print(CategoryList)
+    #print(MenuGroupList[0]["MenuGroup"])
     
-
-    print("total rows: ")
-    print(len(result))
-    
-    directory='C:\\Ziitech'
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    z=0
+    for z in tqdm(range(len(CategoryList))):
+        for z in range(len(CategoryList)):
+            
+            
+            TemplateData["Category"]=CategoryList[z]
+            TemplateData["CultureCategory"]=CategoryList[z]
+            TemplateData["MenuGroupCode"]="0"
+            zz=z+1
+            code = ("%02d" % zz)
+            TemplateData["Code"]=code
+            TemplateData["OrderIndex"]=z
+            TemplateData["Enable"]="TRUE"
         
-    Export_file="C:\\Ziitech\\export_data.xlsx"
-    print("Export to new excel")
-    result.to_excel(Export_file, index = True, header=True,engine='xlsxwriter')
-    print("Stage 1 Process completed")
-
-    print("Stage 2 Start, converting Data to DDA Formate.....")
-    DDAExcel = pd.DataFrame()
+            TemplateData = TemplateData.to_frame()
+            TemplateData = TemplateData.transpose()
+            CategoryDataFrame = pd.concat([CategoryDataFrame, TemplateData],ignore_index=True)
+    return CategoryDataFrame
     
-    DDADownloadTemplate_file="C:\\Ziitech\\ItemImportFormat.xls"
-    if not os.path.exists(DDADownloadTemplate_file):
-           
-        try:
-            downloadURL="https://download.ziicloud.com/programs/ziiposclassic/ItemImportFormat.xls"
+ 
+def processItem(ExcelSouce,template):
+    
+    print("============= Process Item =====================")
+    ItemDataFrame = pd.DataFrame()
+    
+    
+    TemplateData["ItemCode"]=""
+    TemplateData["XeroAccountCode"]=""
+    TemplateData["XeroAccountId"]=""
+    TemplateData["BarCode"]=""
+    TemplateData["BarCode1"]=""
+    TemplateData["BarCode2"]=""
+    TemplateData["BarCode3"]=""
+    TemplateData["Instruction"]=""
+    TemplateData["Multiple"]=""
+    TemplateData["Price1"]=""
+    TemplateData["Price2"]=""
+    TemplateData["Price3"]=""
+    TemplateData["PackagePrice"]=""
+    TemplateData["PackagePrice1"]=""
+    TemplateData["PackagePrice2"]=""
+    TemplateData["PackagePrice3"]=""
+    TemplateData["SubDescription"]=""
+    TemplateData["SubDescription1"]=""
+    TemplateData["SubDescription2"]=""
+    TemplateData["SubDescription3"]=""
+    TemplateData["Description1"]=""
+    TemplateData["Description2"]=""
+    TemplateData["Price"]=""
+    TemplateData["TaxRate"]=""
+    TemplateData["Category"]=""
+    TemplateData["Active"]=""
+    TemplateData["PrinterPort"]=""
+    TemplateData["AllowDiscount"]=""
+    TemplateData["JobListColor"]=""
+    TemplateData["OpenPrice"]=""
+    TemplateData["PrinterPort1"]=""
+    TemplateData["PrinterPort2"]=""
+    TemplateData["HappyHourPrice1"]=""
+    TemplateData["HappyHourPrice2"]=""
+    TemplateData["HappyHourPrice3"]=""
+    TemplateData["HappyHourPrice4"]=""
+    TemplateData["DefaultQty"]=""
+    TemplateData["SubDescriptionSwap"]=""
+    TemplateData["MainPosition"]=""
+    TemplateData["POSPosition"]=""
+    TemplateData["KitchenScreenFontColor"]=""
+    TemplateData["PrinterPort3"]=""
+    TemplateData["ItemGroup"]=""
+    TemplateData["NoteGroupCode"]=""
+    TemplateData["OnlyShowOnSubMenu"]=""
+    TemplateData["SubCategory"]=""
+    TemplateData["ButtonColor1"]=""
+    TemplateData["PhoneOrderPosition"]=""
+    TemplateData["AutoPopSpellInstructionKeyboard"]=""
+    TemplateData["KitchenScreen1"]=""
+    TemplateData["KitchenScreen2"]=""
+    TemplateData["KitchenScreen3"]=""
+    TemplateData["KitchenScreen4"]=""
+    TemplateData["Scalable"]=""
+    TemplateData["WeekendPrice"]=""
+    TemplateData["WeekendPrice1"]=""
+    TemplateData["WeekendPrice2"]=""
+    TemplateData["WeekendPrice3"]=""
+    TemplateData["Recommended"]=""
+    TemplateData["PricePicture1"]=""
+    TemplateData["PricePictureCloudAddr1"]=""
+    TemplateData["PricePicture2"]=""
+    TemplateData["PricePictureCloudAddr2"]=""
+    TemplateData["PricePicture3"]=""
+    TemplateData["PricePictureCloudAddr3"]=""
+    TemplateData["PricePicture4"]=""
+    TemplateData["PricePictureCloudAddr4"]=""
+    TemplateData["PicturePath"]=""
+    TemplateData["PictureCloudAddr"]=""
+    TemplateData["OnlinePicturePath"]=""
+    TemplateData["OnlinePictureCloudAddr"]=""
+    TemplateData["OnlineDisplayName1"]=""
+    TemplateData["OnlineDisplayName2"]=""
+    TemplateData["PricePictureUrl1"]=""
+    TemplateData["PricePictureUrl2"]=""
+    TemplateData["PricePictureUrl3"]=""
+    TemplateData["PricePictureUrl4"]=""
+    TemplateData["PictureUrl"]=""
+    TemplateData["OnlinePictureUrl"]=""
+    TemplateData["Description3"]=""
+    TemplateData["Description4"]=""
+    TemplateData["ItemDescription1"]=""
+    TemplateData["ItemDescription2"]=""
+    TemplateData["ItemDescription3"]=""
+    TemplateData["ItemDescription4"]=""
+    TemplateData["TimeChargeItem"]=""
+    TemplateData["SoldOut"]=""
+    TemplateData["SoldOutUpdateTime"]=""
+    TemplateData["PromotionItem"]=""
+    TemplateData["CanBeRedeemItem"]=""
+    TemplateData["TareWeight"]=""
+    TemplateData["Cost"]=""
+    TemplateData["Cost1"]=""
+    TemplateData["Cost2"]=""
+    TemplateData["Cost3"]=""
+    TemplateData["QuantityFollowByPeopleCount"]=""
+    TemplateData["RedeemPoints"]=""
+    TemplateData["OnlineOrderItem"]=""
+    TemplateData["OtherChargeItem"]=""
+    TemplateData["WeightDivideMeasureAsQty"]=""
+    TemplateData["MeasureWeight"]=""
+    TemplateData["CategoryList"]=""
+    TemplateData["ForeColor"]=""
+    TemplateData["BorderColor"]=""
+    TemplateData["Ingredients"]=""
+    TemplateData["CultureDescription"]=""
+    TemplateData["CultureCategory"]=""
+    TemplateData["CultureItemDescription"]=""
+    TemplateData["MaximumQty"]=""
+    TemplateData["TimeConsumingItem"]=""
+    TemplateData["OnlineStatus"]=""
+    TemplateData["QRCodeStatus"]=""
+    TemplateData["OnlinePrice1"]=""
+    TemplateData["OnlinePrice2"]=""
+    TemplateData["OnlinePrice3"]=""
+    TemplateData["OnlinePrice4"]=""
+    TemplateData["OrderIndex"]=""
+    TemplateData["AllowGift"]=""
+    TemplateData["MenuItemCategorySort"]=""
+    TemplateData["DoNotAutoEnterSubmenuPage"]=""
+    TemplateData["SoldOutSyncFlag"]=""
+    TemplateData["BgColor"]=""
+    TemplateData["ItemFontColor"]=""
+    TemplateData=template.iloc[0]
+
+  
+   
+  
+    #print(ExcelSouce.iloc[0]["ItemCode"])
+    #print(MenuGroupList[0]["MenuGroup"])
+    
+    z=0
+    for z in tqdm(range(len(ExcelSouce))):
+        for z in range(len(ExcelSouce)):
+            
+            TemplateData["ItemCode"]=ExcelSouce.iloc[z]["ItemCode"]
+            TemplateData["Description1"]=ExcelSouce.iloc[z]["Description1"]
+            TemplateData["Description2"]=ExcelSouce.iloc[z]["Description2"]
+            TemplateData["Description3"]=ExcelSouce.iloc[z]["Description3"]
+            TemplateData["Description4"]=ExcelSouce.iloc[z]["Description4"]
+            TemplateData["Price"]=ExcelSouce.iloc[z]["Price"]
+            TemplateData["Price1"]=ExcelSouce.iloc[z]["Price1"]
+            TemplateData["Price2"]=ExcelSouce.iloc[z]["Price2"]
+            TemplateData["Price3"]=ExcelSouce.iloc[z]["Price3"]
+            
+            TemplateData["CultureDescription"]=ExcelSouce.iloc[z]["Description1"]
+            TemplateData["Category"]=ExcelSouce.iloc[z]["Category"]
+            if ExcelSouce.iloc[z]["ItemGroup"]=="":
+                ExcelSouce.iloc[z]["ItemGroup"]="OTHERS"
+            else:
+                TemplateData["ItemGroup"]=ExcelSouce.iloc[z]["ItemGroup"]
                 
-            wget.download(downloadURL, DDADownloadTemplate_file)
-        except wget.Error as ex:
-            print("Download Files error")
-        
+            
+            TemplateData["HappyHourPrice1"]=ExcelSouce.iloc[z]["HappyHourPrice1"]
+            TemplateData["HappyHourPrice2"]=ExcelSouce.iloc[z]["HappyHourPrice2"]
+            TemplateData["HappyHourPrice3"]=ExcelSouce.iloc[z]["HappyHourPrice3"]
+            TemplateData["HappyHourPrice4"]=ExcelSouce.iloc[z]["HappyHourPrice4"]
+            
+            TemplateData["Instruction"]=ExcelSouce.iloc[z]["Instruction"]
+            TemplateData["Multiple"]=ExcelSouce.iloc[z]["Multiple"]
+            TemplateData["Scalable"]=ExcelSouce.iloc[z]["Scalable"]
+            TemplateData["OpenPrice"]=ExcelSouce.iloc[z]["OpenPrice"]
+            TemplateData["OnlineStatus"]=ExcelSouce.iloc[z]["OnlineStatus"]
+            TemplateData["QRCodeStatus"]=ExcelSouce.iloc[z]["QRCodeStatus"]
+            TemplateData["PrinterPort1"]=ExcelSouce.iloc[z]["PrinterPort1"]
+            TemplateData["PrinterPort2"]=ExcelSouce.iloc[z]["PrinterPort2"]
+            TemplateData["PrinterPort3"]=ExcelSouce.iloc[z]["PrinterPort3"]
+            TemplateData["PrinterPort4"]=ExcelSouce.iloc[z]["PrinterPort4"]
 
-    DDADataTemplate = pd.read_excel(DDADownloadTemplate_file, index_col=None,dtype = str)
-     #DDAExcel=DDADataTemplete.astype(str)
-    DDAExcel =DDADataTemplate
+            
+           
+         
+        #   ItemCode	
+        #   Description1	
+        #   Description2	
+        #   Description3	
+        #   Description4	
+        #   MenuGroup	
+        #   Category	
+        #   ItemGroup	
+        #   Price	
+        #   Price1	
+        #   Price2	
+        #   Price3	
+        #   HappyHourPrice1	
+        #   HappyHourPrice2	
+        #   HappyHourPrice3	
+        #   HappyHourPrice4	
+        #   WeekendPrice	
+        #   WeekendPrice1	
+        #   WeekendPrice2	
+        #   WeekendPrice3	
+        #   TaxRate	
+        #   SubDescription	
+        #   SubDescription1	
+        #   SubDescription2	
+        #   SubDescription3	
+        #   Instruction	
+        #   Scalable	
+        #   OpenPrice	
+        #   Multiple	
+        #   OnlineStatus	
+        #   QRCodeStatus	
+        #   PrinterPort1	
+        #   PrinterPort2	
+        #   PrinterPort3	
+        #   PrinterPort4
+
+           # TemplateData["Enable"]="TRUE"
+            print("+================++++++")
+            print(TemplateData)
+            TemplateData = TemplateData.to_frame()
+            TemplateData = TemplateData.transpose()
+            ItemDataFrame = pd.concat([ItemDataFrame, TemplateData],ignore_index=True)
     
-    DDAExcelFinal = convertToDDAExcel(result,DDAExcel)
+    print(ItemDataFrame)
+    return ItemDataFrame
     
-    FinalDDA_file="C:\\Ziitech\\OutPut.xls"
-    DDAExcelFinal.to_excel(FinalDDA_file, index = False, header=True,engine='xlsxwriter')
-    messagebox.showinfo(title="Process Completed",message="Data Process Completed, Please check C:\\Ziitech Folder")
     
-   
 
 
 def processMenu(ExcelSouce):
-    directory='C:\\Ziitech'
+  
+    
     if not os.path.exists(directory):
         os.makedirs(directory)
-    fullSizeMenuTemplate_file="C:\\Ziitech\\ZiiPOS_MenuTemplate.xls"
     if not os.path.exists(fullSizeMenuTemplate_file):
-           
         try:
-            downloadURL="https://download.ziicloud.com/other/ZiiPOS_MenuTemplate.xlsx"
-                
             wget.download(downloadURL, fullSizeMenuTemplate_file)
         except wget.Error as ex:
             print("Download Files error")
             messagebox.showerror(title="Error", message="Cannot download template file, please check your network !!")
             
             
-    currentMenu = pd.read_excel(ExcelSouce, index_col=None,dtype = str)
-    print(currentMenu)
-            
-    DDADataTemplate = pd.read_excel(fullSizeMenuTemplate_file, index_col=None,dtype = str)
-    print(DDADataTemplate)
+    sampleMenu = pd.read_excel(ExcelSouce, index_col=None)
+   
+    
+    fullSizeExcel=pd.ExcelFile(fullSizeMenuTemplate_file)
+   
+    
+    MenuGroupTable = pd.read_excel(fullSizeExcel, 'MenuGroupTable')
+    ItemGroupTable = pd.read_excel(fullSizeExcel, 'ItemGroupTable')
+    MenuitemTable=pd.read_excel(fullSizeExcel, 'MenuItem')
+    
+    
+    
+    Coursetable = pd.read_excel(fullSizeExcel, 'Course')
+    CategoryTable = pd.read_excel(fullSizeExcel, 'Category')
+    PresetNoteGroupTable = pd.read_excel(fullSizeExcel, 'PresetNoteGroup')
+    MenuItemRelationTable = pd.read_excel(fullSizeExcel, 'MenuItemRelation')
+    SubMenuLinkHeadTable = pd.read_excel(fullSizeExcel, 'SubMenuLinkHead')
+    SubMenuLinkDetailTable = pd.read_excel(fullSizeExcel, 'SubMenuLinkDetail')
+    SubItemGroupTable = pd.read_excel(fullSizeExcel, 'SubItemGroup')
+    InstructionLinkGroupTable = pd.read_excel(fullSizeExcel, 'InstructionLinkGroup')
+    InstructionLinkTable = pd.read_excel(fullSizeExcel, 'InstructionLink')
+
+    
+    
+    
+    #MenuGroupSheet=processMenuGroup(sampleMenu,MenuGroupTable)
+    CategoryTable=processCategory(sampleMenu,CategoryTable)
+    #MenuitemTable = processItem(sampleMenu,MenuitemTable)
+
+
+
+    #-------------------------output excel-----------------------------------------------------------
+    writer = pd.ExcelWriter(FinalMenulFile, engine = 'xlsxwriter')
+    MenuGroupTable.to_excel(writer, sheet_name = 'MenuGroupTable',index = False, header=True)
+
+
+    CategoryTable.to_excel(writer, sheet_name = 'Category',index = False, header=True)
+    MenuitemTable.to_excel(writer, sheet_name = 'Menuitem',index = False, header=True)
+    
+    Coursetable = Coursetable[0:0]
+    Coursetable.to_excel(writer, sheet_name = 'Course',index = False, header=True)
+    
+    ItemGroupTable.to_excel(writer, sheet_name = 'ItemGroupTable',index = False, header=True)
+    
+    PresetNoteGroupTable.to_excel(writer, sheet_name = 'PresetNoteGroup',index = False, header=True)
+    
+    MenuItemRelationTable.to_excel(writer, sheet_name = 'MenuGroupTable',index = False, header=True)
+    
+    SubMenuLinkHeadTable.to_excel(writer, sheet_name = 'SubMenuLinkHead',index = False, header=True)
+    
+    SubMenuLinkDetailTable.to_excel(writer, sheet_name = 'SubMenuLinkDetail',index = False, header=True)
+    
+    SubItemGroupTable.to_excel(writer, sheet_name = 'SubItemGroup',index = False, header=True)
+    
+    InstructionLinkGroupTable.to_excel(writer, sheet_name = 'InstructionLinkGroup',index = False, header=True)
+    
+    InstructionLinkTable.to_excel(writer, sheet_name = 'InstructionLink',index = False, header=True)
+    
+
+    
+
+    # Course
+    # Category
+    # PresetNoteGroup
+    # MenuItemRelation
+    # SubMenuLinkHead
+    # SubMenuLinkDetail
+    # SubItemGroup
+    # InstructionLinkGroup
+    # InstructionLink
+    
+    
+
+    writer.close()
+    
+
+   
+
+    
+    
+    
+   
+    
+    #DDADataTemplate = pd.read_excel(fullSizeMenuTemplate_file, index_col=None,dtype = str)
+    
     #DDAExcel=DDADataTemplete.astype(str)
+    messagebox.showinfo(title="Process Completed",message="Data Process Completed, Please check C:\\Ziitech Folder")
 
 
 
