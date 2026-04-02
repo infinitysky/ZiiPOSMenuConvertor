@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZiiPOS Menu Converter V3</title>
+  <link rel="stylesheet" href="/static/style.css?v={{ cache_bust }}">
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="topbar">
+    <h1 id="app-title">ZiiPOS Menu Converter V3</h1>
+    <div class="topbar-right">
+      <select id="ui-lang" class="lang-select">
+        <option value="en">EN</option>
+        <option value="cn">中文</option>
+        <option value="jp">日本語</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="tab-ai" id="tabBtn-ai">AI Import</button>
+    <button class="tab-btn" data-tab="tab-excel" id="tabBtn-excel">Excel Import</button>
+  </nav>
+
+  <!-- ═══════════════ AI TAB ═══════════════ -->
+  <section id="tab-ai" class="tab-panel active">
+    <!-- Controls row -->
+    <div class="controls-row">
+      <div class="ctrl-group">
+        <label data-i18n="lbl_source_lang">Source Language</label>
+        <select id="ai-src-lang">
+          <option value="auto" data-i18n="lang_auto">Auto-detect</option>
+          <option value="jp" data-i18n="lang_jp">Japanese</option>
+          <option value="cn" data-i18n="lang_cn">Chinese</option>
+          <option value="en" data-i18n="lang_en">English</option>
+          <option value="kr" data-i18n="lang_kr">Korean</option>
+          <option value="vi" data-i18n="lang_vi">Vietnamese</option>
+          <option value="th" data-i18n="lang_th">Thai</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label data-i18n="lbl_trans_mode">Translation</label>
+        <select id="ai-trans-mode">
+          <option value="online" data-i18n="trans_online">Online (API)</option>
+          <option value="offline" data-i18n="trans_offline">Offline (Local)</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>Provider</label>
+        <select id="ai-provider">
+          <option value="OpenAI">OpenAI</option>
+          <option value="DeepSeek">DeepSeek</option>
+          <option value="Doubao">Doubao</option>
+          <option value="Claude">Claude</option>
+        </select>
+      </div>
+      <div class="ctrl-group api-key-group">
+        <label data-i18n="lbl_api_key">API:</label>
+        <input type="password" id="ai-api-key" placeholder="API Key" autocomplete="off">
+        <button class="btn-icon" id="btn-save-key" title="Save API Key">&#128190;</button>
+      </div>
+    </div>
+
+    <!-- Image Grid Area -->
+    <div class="file-grid-wrapper">
+      <div class="file-grid-toolbar">
+        <button class="btn btn-primary" id="btn-add-files">+ Add Files</button>
+        <button class="btn btn-ghost" id="btn-clear-files" data-i18n="btn_clear">Clear All</button>
+        <span class="file-count" id="file-count">0 files</span>
+      </div>
+      <div class="file-grid" id="file-grid">
+        <div class="drop-zone" id="drop-zone">
+          <div class="drop-icon">&#128206;</div>
+          <p id="drop-hint" data-i18n="msg_drop_hint">Drag & drop files here or click Add Files</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Read button -->
+    <div class="action-bar">
+      <button class="btn btn-accent" id="btn-read" data-i18n="btn_read">Read & Parse</button>
+    </div>
+
+    <!-- Description Language Config -->
+    <div class="desc-config">
+      <span class="desc-config-label" data-i18n="lbl_desc_config">Description Language Config</span>
+      <div class="desc-selects">
+        <select id="desc-lang-1" class="desc-sel"><option value="jp">Japanese</option><option value="cn">Chinese</option><option value="en">English</option><option value="kr">Korean</option><option value="vi">Vietnamese</option><option value="th">Thai</option><option value="">-- None --</option></select>
+        <select id="desc-lang-2" class="desc-sel"><option value="cn">Chinese</option><option value="jp">Japanese</option><option value="en">English</option><option value="kr">Korean</option><option value="vi">Vietnamese</option><option value="th">Thai</option><option value="">-- None --</option></select>
+        <select id="desc-lang-3" class="desc-sel"><option value="en">English</option><option value="jp">Japanese</option><option value="cn">Chinese</option><option value="kr">Korean</option><option value="vi">Vietnamese</option><option value="th">Thai</option><option value="">-- None --</option></select>
+        <select id="desc-lang-4" class="desc-sel"><option value="">-- None --</option><option value="jp">Japanese</option><option value="cn">Chinese</option><option value="en">English</option><option value="kr">Korean</option><option value="vi">Vietnamese</option><option value="th">Thai</option></select>
+      </div>
+    </div>
+
+    <!-- Editable Table -->
+    <div class="table-wrapper">
+      <div class="table-toolbar">
+        <button class="btn btn-small" id="btn-add-row" data-i18n="btn_add_row">+ Add Row</button>
+        <button class="btn btn-small btn-danger" id="btn-del-row" data-i18n="btn_del_row">- Delete Row</button>
+        <span class="item-count" id="item-count">0 items</span>
+      </div>
+      <div class="table-scroll">
+        <table id="menu-table">
+          <thead>
+            <tr>
+              <th class="col-check"><input type="checkbox" id="check-all"></th>
+              <th class="col-code" data-i18n="col_itemcode">ItemCode</th>
+              <th class="col-name" data-i18n="col_name">Name</th>
+              <th class="col-price" data-i18n="col_price">Price</th>
+              <th class="col-cat" data-i18n="col_category">Category</th>
+            </tr>
+          </thead>
+          <tbody id="menu-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Output path + export buttons -->
+    <div class="export-bar">
+      <div class="output-path-group">
+        <label data-i18n="lbl_output_path">Output Path</label>
+        <input type="text" id="ai-output-path" value="C:\Ziitech\Menu">
+        <button class="btn btn-small" id="btn-ai-browse" data-i18n="btn_browse">Browse</button>
+      </div>
+      <div class="export-buttons">
+        <button class="btn btn-accent" id="btn-translate-export" data-i18n="btn_export">Translate & Export</button>
+        <button class="btn btn-secondary" id="btn-save-simple" data-i18n="btn_save_simple">Save Simple Excel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ EXCEL TAB ═══════════════ -->
+  <section id="tab-excel" class="tab-panel">
+    <div class="excel-form">
+      <div class="form-row">
+        <label data-i18n="lbl_menu_file">Menu File</label>
+        <input type="text" id="excel-source" readonly>
+        <button class="btn btn-small" id="btn-excel-select" data-i18n="btn_select">Select</button>
+      </div>
+      <div class="form-row">
+        <label data-i18n="lbl_output_path">Output Path</label>
+        <input type="text" id="excel-output-path" value="C:\Ziitech\Menu">
+        <button class="btn btn-small" id="btn-excel-browse" data-i18n="btn_browse">Browse</button>
+      </div>
+      <div class="form-row center">
+        <button class="btn btn-accent btn-large" id="btn-excel-convert" data-i18n="btn_convert">Convert</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Status bar -->
+  <footer class="status-bar">
+    <span id="status-text">Ready</span>
+  </footer>
+
+  <script src="/static/app.js?v={{ cache_bust }}"></script>
+</body>
+</html>

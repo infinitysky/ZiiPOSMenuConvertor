@@ -1,0 +1,14 @@
+pandas>=2.0
+openpyxl>=3.1
+XlsxWriter>=3.1
+numpy>=1.24
+tqdm>=4.65
+wget>=3.2
+Pillow>=10.0
+rapidocr>=3.8.0
+rapid-table>=3.0.0
+onnxruntime>=1.17
+PyMuPDF>=1.24
+python-docx>=1.1
+argostranslate>=1.6
+openai>=1.0

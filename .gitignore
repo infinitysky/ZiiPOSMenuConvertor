@@ -1,3 +1,13 @@
-build/*
-dist/*
+# PyInstaller build output
+build/
+**/build/
+dist/
+**/dist/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+
 EGBOffice_Converter.spec

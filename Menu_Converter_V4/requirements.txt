@@ -1,0 +1,7 @@
+pandas>=2.0
+openpyxl==3.1.5
+XlsxWriter>=3.1
+numpy>=1.24
+tqdm>=4.65
+wget>=3.2
+Pillow>=10.0
