@@ -22,6 +22,7 @@ from Menu_Converter import (
     ensure_template, normalize_source_columns,
     processMenuGroup, processCategory, processItem,
 )
+from pe_parser import read_pe_menu, pe_item_code, extract_images
 
 CONFIG_DIR = os.path.join(
     os.environ.get("APPDATA", os.path.expanduser("~")),
@@ -300,7 +301,6 @@ class App:
 
         def do_read():
             try:
-                from pe_parser import read_pe_menu
                 import openpyxl
 
                 items = read_pe_menu(filepath)
@@ -342,7 +342,7 @@ class App:
                 else t("status_hide", self.ui_lang)
             )
             self.pe_tree.insert("", "end", values=(
-                "%04d" % (idx + 1),
+                pe_item_code(item, idx),
                 item["name"],
                 item["price"],
                 item["category"],
@@ -382,7 +382,7 @@ class App:
                 source_rows = []
                 for idx, item in enumerate(items):
                     source_rows.append({
-                        "ItemCode": "%04d" % (idx + 1),
+                        "ItemCode": pe_item_code(item, idx),
                         "Description1": item["name"],
                         "Description2": "",
                         "Description3": "",
@@ -469,7 +469,6 @@ class App:
                 ))
                 img_count = 0
                 if filepath:
-                    from pe_parser import extract_images
                     img_count = extract_images(filepath, items, output_dir)
 
                 pics_dir = os.path.join(output_dir, "pics")

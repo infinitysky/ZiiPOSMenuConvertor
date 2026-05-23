@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZiiPOS Menu Converter V4 Go</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="lang-group">
+      <span>UI:</span>
+      <button data-lang="en" class="lang-btn active">EN</button>
+      <button data-lang="cn" class="lang-btn">CN</button>
+      <button data-lang="jp" class="lang-btn">JP</button>
+    </div>
+    <h1 id="title">ZiiPOS Menu Converter V4.0 (Go)</h1>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="excel" id="tab-excel">Excel Import</button>
+    <button class="tab" data-tab="pe" id="tab-pe">PE Menu Import</button>
+  </nav>
+
+  <main>
+    <section id="panel-excel" class="panel active">
+      <div class="field-row">
+        <label id="lbl-menu-file">Menu File</label>
+        <input type="text" id="excel-source" readonly />
+        <button class="btn" id="btn-excel-file">Select</button>
+      </div>
+      <div class="field-row">
+        <label id="lbl-output-excel">Output Folder</label>
+        <input type="text" id="excel-output" />
+        <button class="btn" id="btn-excel-out">Browse</button>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btn-excel-convert">Convert</button>
+      </div>
+    </section>
+
+    <section id="panel-pe" class="panel">
+      <div class="field-row">
+        <label id="lbl-pe-file">PE Menu File</label>
+        <input type="text" id="pe-source" readonly />
+        <button class="btn" id="btn-pe-file">Select</button>
+      </div>
+      <div class="field-row">
+        <label id="lbl-output-pe">Output Folder</label>
+        <input type="text" id="pe-output" />
+        <button class="btn" id="btn-pe-out">Browse</button>
+      </div>
+      <div class="actions">
+        <button class="btn info" id="btn-pe-read">Read &amp; Preview</button>
+        <button class="btn primary" id="btn-pe-convert">Convert to ZiiPOS</button>
+      </div>
+      <p id="pe-status" class="status"></p>
+      <div class="table-wrap">
+        <table id="pe-table">
+          <thead>
+            <tr>
+              <th data-col="col_itemcode">ItemCode</th>
+              <th data-col="col_name">Name</th>
+              <th data-col="col_price">Price</th>
+              <th data-col="col_category">Category</th>
+              <th data-col="col_menugroup">MenuGroup</th>
+              <th data-col="col_tax">Tax</th>
+              <th data-col="col_status">Status</th>
+              <th data-col="col_has_image">Image</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

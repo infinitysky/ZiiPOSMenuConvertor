@@ -32,7 +32,7 @@ if exist dist rmdir /s /q dist
 
 echo.
 echo [4/5] Building EXE with PyInstaller...
-pyinstaller Menu_Converter_V4.spec --noconfirm --clean
+python -m PyInstaller Menu_Converter_V4.spec --noconfirm --clean
 if errorlevel 1 (
     echo ERROR: Build failed!
     pause

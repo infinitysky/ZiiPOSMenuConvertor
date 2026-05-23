@@ -3,7 +3,7 @@ PE Menu Excel parser.
 Reads the PE POS export format and converts to ZiiPOS-compatible data.
 
 PE Excel columns (no header row):
-  A: PE Item ID (int)
+  A: Product code / PE Item ID (used as ZiiPOS ItemCode)
   B: Category path (e.g. "居酒屋メニュー/Izakaya menu-揚げ物/Fried food")
   C: Item name
   D: Image (embedded, cell value is None)
@@ -103,12 +103,21 @@ def _sanitize_filename(name: str) -> str:
     return name
 
 
+def pe_item_code(item: dict, idx: int) -> str:
+    """Use PE column A (product code) when present, else sequential fallback."""
+    pe_id = str(item.get("pe_id", "")).strip()
+    if pe_id:
+        return pe_id
+    return "%04d" % (idx + 1)
+
+
 def read_pe_menu(filepath: str) -> list[dict]:
     """
     Read a PE Menu Excel file and return structured menu items.
 
     Returns list of dicts:
       {pe_id, menu_group, category, name, price, tax_rate, status, row_idx}
+      pe_id = column A product code
     """
     wb = openpyxl.load_workbook(filepath, data_only=True)
     ws = wb.active

@@ -58,7 +58,7 @@ Write-Host ""
 Write-Host "[4/5] Building EXE with PyInstaller..." -ForegroundColor Yellow
 Write-Host "       This may take several minutes..." -ForegroundColor DarkGray
 Write-Host ""
-pyinstaller Menu_Converter_V4.spec --noconfirm --clean
+python -m PyInstaller Menu_Converter_V4.spec --noconfirm --clean
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "ERROR: PyInstaller build failed!" -ForegroundColor Red
